@@ -155,6 +155,7 @@ sed -i "s/^dspace.name.*/dspace.name=$repository/" build.properties
 sed -i "s/^db.username.*/db.username=$user/" build.properties
 sed -i "s/^db.password.*/db.password=$password/" build.properties
 sed -i "s/^websvc.opensearch.description.*/websvc.opensearch.description=$institution/" build.properties
+sed -i "s/^dspace.hostname = .*/dspace.hostname=$dominio/" build.properties
 sed -i "s/^dspace.baseUrl = .*/dspace.baseUrl=http:\/\/$dominio:8080/" build.properties
 sed -i "s/^dspace.url = .*/dspace.url=\${dspace.baseUrl}\/jspui/" build.properties
 sed -i "s/^       <displayed-value>Instituto.*/       <displayed-value>$institution<\/displayed-value>/" dspace/config/input-forms.xml
