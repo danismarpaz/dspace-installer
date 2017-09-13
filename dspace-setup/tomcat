@@ -21,7 +21,7 @@ case "$1" in
 	'start')
 		echo "SERVIDOR TOMCAT INICIADO  | `date` : `id -nu`" >> $log
 		echo "------------------------------------------------------------" >> $log
-		$bin/startup.sh >> $log
+		su - $user -c "$bin/startup.sh" >> $log
 		touch $temp
 		echo "[ON] Servidor Tomcat iniciado"
 		;;
@@ -29,7 +29,7 @@ case "$1" in
 	'stop')
 		echo "SERVIDOR TOMCAT DESLIGADO  | `date` : `id -nu`" >> $log
 		echo "------------------------------------------------------------" >> $log
-		$bin/shutdown.sh >> $log
+		su - $user -c "$bin/shutdown.sh" >> $log
 		rm -f $temp
 		echo "[OFF] Servidor Tomcat desligado."
 		;;
@@ -37,9 +37,9 @@ case "$1" in
 	'restart')
 		echo "SERVIDOR TOMCAT REINICIADO  | `date` : `id -nu`" >> $log
 		echo "------------------------------------------------------------" >> $log
-		$bin/shutdown.sh >> $log
+		su - $user -c "$bin/shutdown.sh" >> $log
 		rm -f $temp
-		$bin/startup.sh >> $log
+		su - $user -c "$bin/startup.sh" >> $log
 		touch $temp
 		echo "[RESTARTED] Servidor Tomcat reiniciado."
 		;;
