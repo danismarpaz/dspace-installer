@@ -213,6 +213,7 @@ percent=1
 
 # Instala o SGBD no sistema [PostgreSQL]
 {
+	apt-get update
 	apt-get install postgresql -y
 } &>/dev/null &
 pid=$!
