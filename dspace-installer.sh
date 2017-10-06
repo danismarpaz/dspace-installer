@@ -124,7 +124,7 @@ if [ "$1" != "std" ]; then
 			;;
 
 			7)
-				base_dir=$(inputboxmod "Nome do diretório-base de instalação do DSpace. Esse diretório será criado na raíz '/' do sistema (por isso não use '/' ou espaços).\n\n Recomendado: 'dspace-base'" "CONFIGURAÇÕES INICIAIS DSPACE" "Continuar" "Voltar" "$base_dir")
+				base_dir=$(inputboxmod "Nome do diretório-base de instalação do DSpace. Esse diretório será criado na raíz '/' do sistema (por isso não use '/' ou espaços).\n\nRecomendado: 'dspace-base'" "CONFIGURAÇÕES INICIAIS DSPACE" "Continuar" "Voltar" "$base_dir")
 				step=$(setstep "$base_dir" $step "r")
 			;;
 
@@ -147,7 +147,7 @@ if [ "$1" != "std" ]; then
 	if [ $step -eq 0 ]; then
 		checkexit 1
 	fi
-	user=$(inputboxmod "O DSpace precisa de um usuário de sistema para operar. Crie agora um novo perfil de usuário padrão que o DSpace poderá usar. Não use espaços ou caracteres especiais. Informe o nome do usuário:\n\n\ Recomendado: 'dspace'" "NOVO USUÁRIO" "Continuar" "Cancelar instalação")
+	user=$(inputboxmod "O DSpace precisa de um usuário de sistema para operar. Crie agora um novo perfil de usuário padrão que o DSpace poderá usar. Não use espaços ou caracteres especiais. Informe o nome do usuário:\n\nRecomendado: 'dspace'" "NOVO USUÁRIO" "Continuar" "Cancelar instalação")
 	checkexit $user
 	user=$(echo $user | tr '[:upper:]' '[:lower:]') # transforma nome em lowercase
 fi
