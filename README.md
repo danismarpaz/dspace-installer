@@ -1,5 +1,5 @@
 # DSpace Installer
-<i>Version 1.4</i>
+<i>Version 1.5</i>
 
 # O que é?
 O DSpace Installer é uma série de scripts que automatizam o processo de instalação do DSpace 5.2. Atualmente o código-fonte do
