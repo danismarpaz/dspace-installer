@@ -10,13 +10,14 @@
 #	$2 - diretório 'home/$user' do usuário padrão do DSpace
 
 # Atribuições locais
-font=$1
-home=$2
+#font=$1
+home=$1
 
 # Import da biblioteca de verificação
 source dspace-setup/verifier.sh
 
 # Copia os arquivos de instação do DSpace para a pasta do usuário padrão
-cp $font $home -R
+mkdir $home/dspace-5.x
+cp ./* $home/dspace-5.x -R
 writewarning $? "Problema ao copiar arquivos-fonte para a pasta do usuário"
-mv $home/dspace* $home/dspace-5.x
+#mv $home/dspace* $home/dspace-5.x
