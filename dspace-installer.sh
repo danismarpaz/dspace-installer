@@ -94,7 +94,7 @@ if [ "$1" != "std" ]; then
 			;;
 
 			2)
-				sigla=$(inputboxmod "Silga da instituição:" "CONFIGURAÇÕES INICIAIS DSPACE" "Continuar" "Voltar" "$sigla")
+				sigla=$(inputboxmod "Sigla da instituição:" "CONFIGURAÇÕES INICIAIS DSPACE" "Continuar" "Voltar" "$sigla")
 				step=$(setstep "$sigla" $step)
 			;;
 
