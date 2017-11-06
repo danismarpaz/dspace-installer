@@ -322,7 +322,7 @@ if [ "$logo" != "" ]; then
 	changeown "$logo" $user
 fi
 {
-	su $user -c "dspace-setup/dspace-webservice.sh '$base_dir' $home '$logo' $dspace_version" -s /bin/bash $user
+	su $user -c "dspace-setup/dspace-webservice.sh '$base_dir' $home $dspace_version '$logo'" -s /bin/bash $user
 } &>/dev/null &
 pid=$!
 showpercent "/$base_dir/webapps" "$home/apache-tomcat/webapps" $pid | progressbar "Configurando arquivos da aplicação web do DSpace..." "ÚLTIMAS CONFIGURAÇÕES"; getfail
