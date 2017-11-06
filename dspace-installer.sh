@@ -62,7 +62,7 @@ sigla='RI'
 step=1
 font=`pwd`
 version='1.5'
-database_name='dspace'`cat dspace/pom.xml | grep "<version>.*<\/version>" | sed "s/[[:punct:]]//g" | sed "s/[[:blank:]]//g" | sed "s/[[:alpha:]]//g"`
+dspace_version='dspace'`cat dspace/pom.xml | grep "<version>.*<\/version>" | sed "s/[[:punct:]]//g" | sed "s/[[:blank:]]//g" | sed "s/[[:alpha:]]//g"`
 
 # Imports das bibliotecas de diálogo com o usuário
 source dspace-setup/dialog.sh
@@ -166,7 +166,7 @@ sed -i "s/^websvc.opensearch.description.*/websvc.opensearch.description=$instit
 sed -i "s/^dspace.hostname = .*/dspace.hostname=$dominio/" build.properties
 sed -i "s/^dspace.baseUrl = .*/dspace.baseUrl=http:\/\/$dominio:8080/" build.properties
 sed -i "s/^dspace.url = .*/dspace.url=\${dspace.baseUrl}\/jspui/" build.properties
-sed -i "s/^db.url=jdbc:postgresql:.*/db.url=jdbc:postgresql:\/\/localhost:5432\/$database_name/" build.properties
+sed -i "s/^db.url=jdbc:postgresql:.*/db.url=jdbc:postgresql:\/\/localhost:5432\/$dspace_version/" build.properties
 sed -i "s/^       <displayed-value>Instituto.*/       <displayed-value>$institution<\/displayed-value>/" dspace/config/input-forms.xml
 sed -i "s/^       <stored-value>Instituto.*/       <stored-value>$institution<\/stored-value>/" dspace/config/input-forms.xml
 sed -i "s/^       <displayed-value>IBICT.*/       <displayed-value>$sigla<\/displayed-value>/" dspace/config/input-forms.xml
@@ -287,26 +287,26 @@ su postgres -c "dspace-setup/dspace-dbuser.sh $user $database_password" -s /bin/
 checkerror $? "Erro ao criar usuário do banco de dados"
 
 # Cria o banco de dados
-su $user -c "createdb -E UNICODE $database_name" -s /bin/bash $user
+su $user -c "createdb -E UNICODE $dspace_version" -s /bin/bash $user
 checkerror $? "Erro ao criar banco de dados"
 
 # Copia os arquivos de instalação para 'home' do usuário DSpace
 {
-	su $user -c "dspace-setup/dspace-source.sh $home" -s /bin/bash $user
+	su $user -c "dspace-setup/dspace-source.sh $home $dspace_version" -s /bin/bash $user
 } &>/dev/null &
 pid=$!
 showpercent "$font" "$home" $pid | progressbar "Copiando arquivos de instalação..." "COPIANDO ARQUIVOS"; getfail
 
 # Compila o código-fonte do DSpace
 {
-	su $user -c "dspace-setup/dspace-compiler.sh $home" -s /bin/bash $user
+	su $user -c "dspace-setup/dspace-compiler.sh $home $dspace_version" -s /bin/bash $user
 } &>/dev/null &
 pid=$!
-showpercentsize 3468348 "$home/dspace-5.x" $pid | progressbar "Compilando arquivos do DSpace. Por favor, certifique-se de estar conectado ininterruptamente à internet. Este processo demora em média 25 minutos, mas pode variar dependendo da velocidade de rede.\nCompilando..." "INSTALANDO DSPACE"; getfail
+showpercentsize 3468348 "$home/$dspace_version" $pid | progressbar "Compilando arquivos do DSpace. Por favor, certifique-se de estar conectado ininterruptamente à internet. Este processo demora em média 25 minutos, mas pode variar dependendo da velocidade de rede.\nCompilando..." "INSTALANDO DSPACE"; getfail
 
 # Instala os arquivos-base do DSpace
 {
-	su $user -c "dspace-setup/dspace-install.sh $home" -s /bin/bash $user
+	su $user -c "dspace-setup/dspace-install.sh $home $dspace_version" -s /bin/bash $user
 } &>/dev/null &
 pid=$!
 showpercentsize 796772 "/$base_dir" $pid | progressbar "Instalando arquivos do DSpace. Este processo deve demorar alguns minutos.\nInstalando..." "INSTALANDO DSPACE"; getfail
@@ -322,7 +322,7 @@ if [ "$logo" != "" ]; then
 	changeown "$logo" $user
 fi
 {
-	su $user -c "dspace-setup/dspace-webservice.sh '$base_dir' $home '$logo'" -s /bin/bash $user
+	su $user -c "dspace-setup/dspace-webservice.sh '$base_dir' $home '$logo' $dspace_version" -s /bin/bash $user
 } &>/dev/null &
 pid=$!
 showpercent "/$base_dir/webapps" "$home/apache-tomcat/webapps" $pid | progressbar "Configurando arquivos da aplicação web do DSpace..." "ÚLTIMAS CONFIGURAÇÕES"; getfail
@@ -352,7 +352,7 @@ percent=1
 # Remove arquivos de instalação
 percent=1
 {
-	cd $home/dspace-5.x; percent=$((percent+50)); echo $percent
+	cd $home/$dspace_version; percent=$((percent+50)); echo $percent
 	rm "$font" -Rf; percent=$((percent+50)); echo $percent
 } | progressbar "Removendo arquivos temporários..." "LIMPANDO"
 

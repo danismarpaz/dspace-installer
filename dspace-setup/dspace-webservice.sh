@@ -8,18 +8,21 @@
 # Argumentos de entrada:
 #	$1 - diretório base do DSpace
 #	$2 - diretório 'home/$user' do usuário padrão do DSpace
-#	$3 - caminho da logo 
+#	$3 - nome do dspace-fonte acompanhado da versão
+#	$4 - caminho da logo 
 
 # Atribuições locais
 base_dir=$1
 home=$2
-logo=$3
+dspace_version=$3
+logo=$4
+
 
 # Import da biblioteca de verificação
 source dspace-setup/verifier.sh
 
 # Configura arquivos de tradução
-cp $home/dspace-5.x/dspace-api/src/main/resources/Messages* /$base_dir/webapps/jspui/WEB-INF/classes
+cp $home/$dspace_version/dspace-api/src/main/resources/Messages* /$base_dir/webapps/jspui/WEB-INF/classes
 writewarning $? "Não foi possível copiar os arquivos de tradução"
 
 # Configura a logo da página inicial do repositório
