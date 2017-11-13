@@ -17,7 +17,7 @@ dspace_version=$2
 source dspace-setup/verifier.sh
 
 # Instala o dspace no diretório-base [usa Apache Ant]
-cd $home/$dspace_version/dspace/target/dspace-.*
+cd $home/$dspace_version/dspace/target/dspace-*
 writewarning $? "Não foi possível acessar o diretório '$home/$dspace_version/dspace/target/dspace-installer'"
 $home/apache-ant/bin/ant fresh_install
 writeerror $? "Problema na instalação do sistema [Apache Ant]"

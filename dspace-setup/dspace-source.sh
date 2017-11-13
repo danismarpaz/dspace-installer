@@ -17,6 +17,6 @@ dspace_version=$2
 source dspace-setup/verifier.sh
 
 # Copia os arquivos de instação do DSpace para a pasta do usuário padrão
-mkdir $home/dspace_version
-cp ./* $home/dspace_version -R
+mkdir $home/$dspace_version
+cp ./* $home/$dspace_version -R
 writewarning $? "Problema ao copiar arquivos-fonte para a pasta do usuário"
