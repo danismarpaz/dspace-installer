@@ -69,10 +69,20 @@ source dspace-setup/dialog.sh
 source dspace-setup/verifier.sh
 
 # =================================================
-# ALTERACAO DE PERMISSÕES
+# ALTERAÇÃO DE PERMISSÕES
 # =================================================
 # Mudança de permissõe de acesso do diretório fonte
 chmod 755 -R "$font"
+
+# =================================================
+# FORÇAR O LOGIN COMO ROOT
+# =================================================
+# Mudança de permissõe de acesso do diretório fonte
+user_aux=`whoami`
+if [ "$user_aux" != "root" ]; then
+	messagebox "Identificamos que seu usuário atual é '$user_aux', e o DSpace Installer requer um usuário com permissões de 'root' para seu funcionamente correto.\nMude para o usuário 'root' e execute novamente o 'dspace-installer.sh'" "PERMISSÃO DE USUÁRIO"
+	checkexit 1
+fi
 
 # =================================================
 # INÍCIO DO PROCESSO DE INSTALAÇÃO
