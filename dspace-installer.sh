@@ -238,7 +238,7 @@ showpercent "packages/" "$home/pacotes/" $pid | progressbar "Instalando pacotes 
 	}| progressbar "Removendo possíveis instalações do pacote JDK..." "CONFIGURANDO JDK"
 	var=$(choseboxmod "Agora será feito o download e instalação do JDK compatível com a instalação do DSpace. Confirme as solicitações de Licença da Oracle a seguir.\n\nPara prosseguir selecione 'Continuar'. Selecione 'Sair' para cancelar." "CONFIGURANDO JDK" "Continuar" "Sair")
 	checkexit $var
-	apt-get install oracle-java8-installer
+	apt-get -y --allow-unauthenticated install oracle-java8-installer
 	fi
 
 # Extrai pacotes a serem usados pelo DSpace
