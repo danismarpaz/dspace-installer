@@ -64,6 +64,22 @@ changeown() {
 	chown $user $directory -R
 }
 
+#Informa se um dado software está instalado no sistema
+checkinstall() {
+	array_results=(`dpkg --get-selections | grep $1 -w`)
+	installed=0
+	
+	for x in "${array_results[@]}"
+	do
+		if [ "$x" == "$1" ];
+		then
+			installed=1
+		fi
+	done
+	
+	echo $installed
+}
+
 makeerrorfile() {
 	if ! [ -e $errorfile ]; then
 		touch $errorfile

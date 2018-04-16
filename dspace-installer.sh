@@ -43,7 +43,7 @@
 # 	Developed by SEDEPTI - UFPA
 #
 # Detalhes:
-#	dspace-installer.sh, version 1.5, UFPA | 2017
+#	dspace-installer.sh, version 1.6, UFPA | 2017
 
 # =================================================
 # DEFINIÇÕES DAS VARIÁVEIS GLOBAIS E IMPORTS
@@ -61,14 +61,16 @@ sigla='RI'
 
 step=1
 font=`pwd`
-version='1.5'
-dspace_version='dspace'`cat dspace/pom.xml | grep "<version>.*<\/version>" | sed "s/[[:punct:]]//g" | sed "s/[[:blank:]]//g" | sed "s/[[:alpha:]]//g"`
+version='1.6'
+#dspace_version='dspace'`cat dspace/pom.xml | grep "<version>.*<\/version>" | sed "s/[[:punct:]]//g" | sed "s/[[:blank:]]//g" | sed "s/[[:alpha:]]//g"`
+dspace_version=''
+url_ibict='https://github.com/ibict-br2/repositorio-padrao'
 
 # Imports das bibliotecas de diálogo com o usuário
 source dspace-setup/dialog.sh
 source dspace-setup/verifier.sh
 
-# =================================================
+#==================================================
 # ALTERAÇÃO DE PERMISSÕES
 # =================================================
 # Mudança de permissõe de acesso do diretório fonte
@@ -132,7 +134,7 @@ if [ "$1" != "std" ]; then
 					step=$(setstep "$pass_aux" $step)
 				fi
 			;;
-
+			
 			7)
 				base_dir=$(inputboxmod "Nome do diretório-base de instalação do DSpace. Esse diretório será criado na raíz '/' do sistema (por isso não use '/' ou espaços).\n\nRecomendado: 'dspace-base'" "CONFIGURAÇÕES INICIAIS DSPACE" "Continuar" "Voltar" "$base_dir")
 				step=$(setstep "$base_dir" $step "r")
@@ -162,9 +164,49 @@ if [ "$1" != "std" ]; then
 	user=$(echo $user | tr '[:upper:]' '[:lower:]') # transforma nome em lowercase
 fi
 
+# Configurando um novo grupo/usuário no sistema
+addgroup $user
+checkwarning $? "Não foi possível adicionar grupo de usuário. (O grupo de usuário já existe?)"
+useradd -m $user -g $user
+checkwarning $? "Não foi possível criar o usuário '$user'. (O usuário já existe?)"
+messagebox "Informe a seguir (em linha de comando) a senha do usuário '$user'. Siga as orientações da tela."
+echo "Informe a senha do usuário '$user': "
+passwd $user
+checkloop $? "passwd $user" #repete comando até o usuário coincidir as senhas
+chsh -s /bin/bash $user
+
+# Definição do diretório 'home' do usuário
+home="/home/$user"
+
 # =================================================
-# PROCEDIMENTOS DE PREPARAÇÃO 
+# PROCEDIMENTOS DE PREPARAÇÃO
 # =================================================
+
+# Atualiza os Pacotes do Sistema
+{
+	apt-get update
+
+	if [ `checkinstall 'git'` -eq 0 ];
+	then
+		apt-get install git -y
+	fi
+
+} &>>~/dspace-installer.log &
+pid=$!
+showpercentsize 36380 "/var/lib/" $pid | progressbar "Atualizando lista dos pacotes e instalando dependências necessárias, isso pode demorar..." "ATUALIZANDO LISTA DE PACOTES"
+
+# Download do Código fonte do IBICT
+{
+	mkdir git_dspace_tmp
+	git clone $url_ibict git_dspace_tmp
+	mv git_dspace_tmp/* ./
+	rm -Rf git_dspace_tmp
+
+} &>>~/dspace-installer.log & # executa as tarefas em segundo plano
+pid=$! # recupera o pid do processo criado na linha anterior
+showpercentsize 36380 "./git_dspace_tmp" $pid | progressbar "Clonando código-fonte de '$url_ibict'" "CLONANDO FONTE DSPACE"
+
+dspace_version='dspace'`cat dspace/pom.xml | grep "<version>.*<\/version>" | sed "s/[[:punct:]]//g" | sed "s/[[:blank:]]//g" | sed "s/[[:alpha:]]//g"`
 
 # Ajustes no arquivo build.properties e input-forms.xml
 sed -i "s/^dspace.install.dir.*/dspace.install.dir=\/$base_dir/" build.properties
@@ -182,27 +224,6 @@ sed -i "s/^       <stored-value>Instituto.*/       <stored-value>$institution<\/
 sed -i "s/^       <displayed-value>IBICT.*/       <displayed-value>$sigla<\/displayed-value>/" dspace/config/input-forms.xml
 sed -i "s/^       <stored-value>IBICT.*/       <stored-value>$sigla<\/stored-value>/" dspace/config/input-forms.xml
 
-# Configurando um novo grupo/usuário no sistema
-addgroup $user
-checkwarning $? "Não foi possível adicionar grupo de usuário. (O grupo de usuário já existe?)"
-useradd -m $user -g $user
-checkwarning $? "Não foi possível criar o usuário '$user'. (O usuário já existe?)"
-messagebox "Informe a seguir (em linha de comando) a senha do usuário '$user'. Siga as orientações da tela."
-echo "Informe a senha do usuário '$user': "
-passwd $user
-checkloop $? "passwd $user" #repete comando até o usuário coincidir as senhas
-chsh -s /bin/bash $user
-
-# Atualiza os Pacotes do Sistema
-{
-	apt-get update
-} &>/dev/null &
-pid=$!
-showpercentsize 36380 "/var/lib/" $pid | progressbar "Atualizando lista dos pacotes do source.list do sistema, isso pode demorar..." "ATUALIZANDO LISTA DE PACOTES"
-
-# Definição do diretório 'home' do usuário
-home="/home/$user"
-
 # Copia para a pasta do usuário os pacotes usados pelo DSpace
 mkdir $home/pacotes
 if [ -e packages/jdk* ]; then
@@ -218,7 +239,7 @@ checkwarning $? "Problema ao criar diretório de pacotes-fonte '$home/pacotes'"
 	cp packages/apache-ant* $home/pacotes/
 	cp packages/apache-maven* $home/pacotes/
 	cp packages/apache-tomcat* $home/pacotes/
-} & # executa as tarefas em segundo plano
+} &>>~/dspace-installer.log & # executa as tarefas em segundo plano
 pid=$! # recupera o pid do processo criado na linha anterior
 showpercent "packages/" "$home/pacotes/" $pid | progressbar "Instalando pacotes importantes..." "INSTALANDO PACOTES"
 
@@ -254,7 +275,7 @@ percent=1
 		update-alternatives --install /usr/bin/java java /opt/jdk/bin/java 100; percent=$((percent+7)); echo $percent
 		update-alternatives --install /usr/bin/javac javac /opt/jdk/bin/javac 100; percent=$((percent+7)); echo $percent
 	fi
-	
+
 	tar zxf $home/pacotes/apache-ant* -C $home; percent=$((percent+7)); echo $percent
 	mv $home/apache-ant* $home/apache-ant; percent=$((percent+7)); echo $percent
 	tar zxf $home/pacotes/apache-maven* -C $home; percent=$((percent+7)); echo $percent
@@ -273,7 +294,7 @@ percent=1
 # Instala o SGBD no sistema [PostgreSQL]
 {
 	apt-get install postgresql -y
-} &>> ~/dspace-installer.log &
+} &>>~/dspace-installer.log &
 pid=$!
 showpercentsize 36380 "/var/lib/" $pid | progressbar "Instalando o sistema gerenciador de banco de dados..." "INSTALANDO SGBD"
 
