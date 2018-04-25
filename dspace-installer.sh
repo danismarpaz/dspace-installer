@@ -15,7 +15,7 @@
 #
 # Versão dos software usados:
 # > DSPACE:
-# 	DSpace version 5.2
+# 	DSpace version 5.x
 # 	Distributed for IBICT, Brazil
 # 	Themed and adapted for SEDEPTI-BC, UFPA, PA, Brazil
 # > APACHE ANT:
@@ -43,7 +43,7 @@
 # 	Developed by SEDEPTI - UFPA
 #
 # Detalhes:
-#	dspace-installer.sh, version 1.6, UFPA | 2017
+#	dspace-installer.sh, version 1.6, UFPA | 2018
 
 # =================================================
 # DEFINIÇÕES DAS VARIÁVEIS GLOBAIS E IMPORTS
@@ -60,9 +60,8 @@ dominio='localhost'
 sigla='RI'
 
 step=1
-font=`pwd`
+font=$(pwd)
 version='1.6'
-#dspace_version='dspace'`cat dspace/pom.xml | grep "<version>.*<\/version>" | sed "s/[[:punct:]]//g" | sed "s/[[:blank:]]//g" | sed "s/[[:alpha:]]//g"`
 dspace_version=''
 url_ibict='https://github.com/ibict-br2/repositorio-padrao'
 
@@ -70,21 +69,21 @@ url_ibict='https://github.com/ibict-br2/repositorio-padrao'
 source dspace-setup/dialog.sh
 source dspace-setup/verifier.sh
 
+# =================================================
+# FORÇAR O LOGIN COMO ROOT
+# =================================================
+#Recebe nome de Usuário Logado e verifica se é o root
+user_aux=$(whoami)
+if [ "$user_aux" != "root" ]; then
+	messagebox "Identificamos que seu usuário atual é '$user_aux', e o DSpace Installer requer um usuário com permissões de 'root' para seu funcionamente correto.\nMude para o usuário 'root' e execute novamente o 'dspace-installer.sh'" "PERMISSÃO DE USUÁRIO"
+	checkexit 1
+fi
+
 #==================================================
 # ALTERAÇÃO DE PERMISSÕES
 # =================================================
 # Mudança de permissõe de acesso do diretório fonte
 chmod 755 -R "$font"
-
-# =================================================
-# FORÇAR O LOGIN COMO ROOT
-# =================================================
-# Mudança de permissõe de acesso do diretório fonte
-user_aux=`whoami`
-if [ "$user_aux" != "root" ]; then
-	messagebox "Identificamos que seu usuário atual é '$user_aux', e o DSpace Installer requer um usuário com permissões de 'root' para seu funcionamente correto.\nMude para o usuário 'root' e execute novamente o 'dspace-installer.sh'" "PERMISSÃO DE USUÁRIO"
-	checkexit 1
-fi
 
 # =================================================
 # INÍCIO DO PROCESSO DE INSTALAÇÃO
@@ -134,7 +133,7 @@ if [ "$1" != "std" ]; then
 					step=$(setstep "$pass_aux" $step)
 				fi
 			;;
-			
+
 			7)
 				base_dir=$(inputboxmod "Nome do diretório-base de instalação do DSpace. Esse diretório será criado na raíz '/' do sistema (por isso não use '/' ou espaços).\n\nRecomendado: 'dspace-base'" "CONFIGURAÇÕES INICIAIS DSPACE" "Continuar" "Voltar" "$base_dir")
 				step=$(setstep "$base_dir" $step "r")
@@ -206,6 +205,7 @@ showpercentsize 36380 "/var/lib/" $pid | progressbar "Atualizando lista dos paco
 pid=$! # recupera o pid do processo criado na linha anterior
 showpercentsize 36380 "./git_dspace_tmp" $pid | progressbar "Clonando código-fonte de '$url_ibict'" "CLONANDO FONTE DSPACE"
 
+#Captura da Versão Baixada do DSpace
 dspace_version='dspace'`cat dspace/pom.xml | grep "<version>.*<\/version>" | sed "s/[[:punct:]]//g" | sed "s/[[:blank:]]//g" | sed "s/[[:alpha:]]//g"`
 
 # Ajustes no arquivo build.properties e input-forms.xml
@@ -250,18 +250,18 @@ showpercent "packages/" "$home/pacotes/" $pid | progressbar "Instalando pacotes 
 	percent=1
 	{
 		#Remove versão atual do Java JDK do Sistema
-		apt-get -y remove --purge openjdk-* &>> ~/dspace-installer.log ; percent=20; echo $percent
-		apt-get -y install software-properties-common dirmngr &>> ~/dspace-installer.log ; percent=40; echo $percent
-		add-apt-repository "deb http://ppa.launchpad.net/webupd8team/java/ubuntu yakkety main" &>> ~/dspace-installer.log ; percent=60; echo $percent
-		apt-get update &>> ~/dspace-installer.log ; percent=80; echo $percent
-		apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C2518248EEA14886 &>> ~/dspace-installer.log
+		#apt-get -y remove --purge openjdk-* &>> ~/dspace-installer.log ; percent=20; echo $percent
+		echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | tee /etc/apt/sources.list.d/webupd8team-java.list  &>> ~/dspace-installer.log ; percent=40; echo $percent
+    echo "deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | tee -a /etc/apt/sources.list.d/webupd8team-java.list &>> ~/dspace-installer.log ; percent=60; echo $percent
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886 &>> ~/dspace-installer.log ; percent=80; echo $percent
+    apt-get update &>> ~/dspace-installer.log ; percent=90; echo $percent
 		percent=100; echo $percent
+
 	}| progressbar "Removendo possíveis instalações do pacote JDK..." "CONFIGURANDO JDK"
 	var=$(choseboxmod "Agora será feito o download e instalação do JDK compatível com a instalação do DSpace. Confirme as solicitações de Licença da Oracle a seguir.\n\nPara prosseguir selecione 'Continuar'. Selecione 'Sair' para cancelar." "CONFIGURANDO JDK" "Continuar" "Sair")
 	checkexit $var
-	apt-get -y --allow-unauthenticated install oracle-java8-installer
+	apt-get install -y --allow-unauthenticated oracle-java8-set-default
 	fi
-
 # Extrai pacotes a serem usados pelo DSpace
 percent=1
 {
@@ -275,14 +275,13 @@ percent=1
 		update-alternatives --install /usr/bin/java java /opt/jdk/bin/java 100; percent=$((percent+7)); echo $percent
 		update-alternatives --install /usr/bin/javac javac /opt/jdk/bin/javac 100; percent=$((percent+7)); echo $percent
 	fi
-
+	#Descompacta arquivos
 	tar zxf $home/pacotes/apache-ant* -C $home; percent=$((percent+7)); echo $percent
 	mv $home/apache-ant* $home/apache-ant; percent=$((percent+7)); echo $percent
 	tar zxf $home/pacotes/apache-maven* -C $home; percent=$((percent+7)); echo $percent
 	mv $home/apache-maven* $home/apache-maven; percent=$((percent+7)); echo $percent
 	tar zxf $home/pacotes/apache-tomcat* -C $home; percent=$((percent+7)); echo $percent
 	mv $home/apache-tomcat* $home/apache-tomcat; percent=$((percent+7)); echo $percent
-
 	# Cria diretórios e altera permissões
 	mkdir /$base_dir
 	checkwarning $? "Não foi possível criar o diretório base '/$base_dir'. (Já existe alguma pasta com esse nome?)"; percent=$((percent+7)); echo $percent
