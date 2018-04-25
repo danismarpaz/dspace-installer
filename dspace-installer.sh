@@ -230,15 +230,15 @@ showpercent "packages/" "$home/pacotes/" $pid | progressbar "Instalando pacotes 
 	{
 		#Remove versão atual do Java JDK do Sistema
 		apt-get -y remove --purge openjdk-* &>> ~/dspace-installer.log ; percent=20; echo $percent
-		apt-get -y install software-properties-common dirmngr &>> ~/dspace-installer.log ; percent=40; echo $percent
-		add-apt-repository "deb http://ppa.launchpad.net/webupd8team/java/ubuntu yakkety main" &>> ~/dspace-installer.log ; percent=60; echo $percent
-		apt-get update &>> ~/dspace-installer.log ; percent=80; echo $percent
-		apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C2518248EEA14886 &>> ~/dspace-installer.log
+		echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | tee /etc/apt/sources.list.d/webupd8team-java.list  &>> ~/dspace-installer.log ; percent=40; echo $percent
+		echo "deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | tee -a /etc/apt/sources.list.d/webupd8team-java.list &>> ~/dspace-installer.log ; percent=60; echo $percent
+		apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886 &>> ~/dspace-installer.log ; percent=80; echo $percent
+		apt-get update &>> ~/dspace-installer.log ; percent=90; echo $percent
 		percent=100; echo $percent
 	}| progressbar "Removendo possíveis instalações do pacote JDK..." "CONFIGURANDO JDK"
 	var=$(choseboxmod "Agora será feito o download e instalação do JDK compatível com a instalação do DSpace. Confirme as solicitações de Licença da Oracle a seguir.\n\nPara prosseguir selecione 'Continuar'. Selecione 'Sair' para cancelar." "CONFIGURANDO JDK" "Continuar" "Sair")
 	checkexit $var
-	apt-get -y --allow-unauthenticated install oracle-java8-installer
+	apt-get install -y --allow-unauthenticated oracle-java8-set-default
 	fi
 
 # Extrai pacotes a serem usados pelo DSpace
