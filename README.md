@@ -37,6 +37,13 @@ Os pacotes apache-ant[version], apache-maven[version], apache-tomcat[version] e 
 contexto de instalação, pois o script principal (dspace-installer.sh) faz uso desses pacotes. A documentação completa das bibliotecas
 e módulos usados na instalação pode ser encontrada na estrutura deste projeto.
 
+# Código Fonte DSpace
+O DSpace Installer foi construído e testado com base na versão 5.x do Software DSpace, assim o código-fonte que será utilizado para instalação
+do mesmo pode ser escolhida entre uma das seguintes opções, estas utilizadas nos testes do instalador:
+
+	DSpace SEDEPTI: https://github.com/souzaluuk/dspace-sedepti
+	DSpace IBICT:	https://github.com/ibict-br2/repositorio-padrao
+
 # Pacotes de terceiros
 O DSpace Installer faz uso de pacotes fornecidos por terceiros. Cada um desses pacotes possui sua própria documentação, suporte e
 licenças de uso. Nós não damos suporte, endossamos ou temos qualquer outro tipo de responsabilidade sobre eles, portanto o uso
